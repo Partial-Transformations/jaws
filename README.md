@@ -1,3 +1,3 @@
 # jaws
 
-Demonstration of packet clustering analysis using Wireshar, Python, Kmeans, and ChatGPT.
+Demonstration of packet clustering analysis using Wireshark, Python, Kmeans, and ChatGPT.

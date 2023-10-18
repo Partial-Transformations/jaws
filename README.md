@@ -1,4 +1,5 @@
-# jaws
+# JAWS
+![hehe](/assets/ohey.jpeg)
 
 Demonstration of packet clustering analysis using Python, Pyshark, Kmeans, and PCA. Designed/written in collaboration with ChatGPT.
 

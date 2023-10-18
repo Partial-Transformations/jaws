@@ -1,6 +1,6 @@
 # jaws
 
-Demonstration of packet clustering analysis using Wireshark, Python, Kmeans/PCA, and designed/written in collaboration with ChatGPT.
+Demonstration of packet clustering analysis using Python, Pyshark, Kmeans, and PCA. Designed/written in collaboration with ChatGPT.
 
 To use the program, you can either generate packets using a tool like the ones found on this list:
 https://www.brianlinkletter.com/2023/02/network-emulators-and-network-simulators-2023/

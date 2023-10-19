@@ -17,10 +17,10 @@ def process_packet(packet):
         "size": len(packet),
         "src_ip": packet.ip.src if 'IP' in packet else 'N/A',
         "dst_ip": packet.ip.dst if 'IP' in packet else 'N/A',
-        "timestamp": packet.sniff_time.isoformat()  # Add timestamp
+        "timestamp": float(packet.sniff_time.timestamp()) * 1000  # Convert to Unix timestamp in milliseconds
     }
 
-    if packet_info['dst_ip'] == 'IP ADDR HERE':
+    if packet_info['dst_ip'] == 'IP ADDR':
         console.print(f"[red]Captured packet: {packet_info}[/red]")
     else:
         console.print(f"[yellow]Captured packet: {packet_info}[/yellow]")

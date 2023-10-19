@@ -8,7 +8,7 @@ import time
 HOST = 'IP ADDR HERE'  # Replace with your EC2 instance's public IP
 PORT = 443  # Port to connect to
 CHUNK_SIZE = 4096  # Typical size for a chunk of file data
-MOCK_FILE_SIZE = 2000000  # Mock file size in bytes
+MOCK_FILE_SIZE = 5242880  # Mock file size in bytes
 INTERVAL = 30  # Time in seconds to wait before running the script again
 
 def generate_random_data(size):

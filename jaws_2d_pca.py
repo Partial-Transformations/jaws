@@ -11,14 +11,18 @@ from scipy.spatial import distance
 import numpy as np
 import json
 import random
+from datetime import datetime
 
 # Increase this value based on your preference
 N_ANOMALIES_TO_DISPLAY = 20
-N_TOP_ANOMALIES = 5  
-
-# Function to generate random color
-def generate_random_color():
-    return "#{:02x}{:02x}{:02x}".format(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+N_TOP_ANOMALIES = 5
+# Key will be some unique identifier for an anomaly, value will be metadata like timestamp
+anomaly_history = {}
+# Predefined colors for clusters
+cluster_colors = [
+    "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd",
+    "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf"
+]
 
 # Function to determine the optimal number of clusters
 def get_optimal_clusters(X):
@@ -74,22 +78,47 @@ with progress:
             labels = kmeans.labels_
             
             for i in range(n_clusters):
-                color = generate_random_color()
+                color = cluster_colors[i % len(cluster_colors)]
                 points_in_cluster = np.array([X_pca[j] for j in range(len(X_pca)) if labels[j] == i])
-                # Scaling based on the actual packet size from the dataframe
                 sizes = [df.iloc[j]['size'] for j in range(len(X_pca)) if labels[j] == i] 
                 ax1.scatter(points_in_cluster[:, 0], points_in_cluster[:, 1], c=color, s=np.array(sizes)/50)
 
+
             for i, centroid in enumerate(centroids):
-                color = generate_random_color()
+                color = cluster_colors[i % len(cluster_colors)]
                 ax1.scatter(centroid[0], centroid[1], marker='o', s=300, linewidths=3, color=color, zorder=10)
+
             
             distances = [distance.euclidean(X_normalized[i], centroids[labels[i]]) for i in range(len(X_normalized))]
             df['distance_to_center'] = distances
             anomalies = df.nlargest(N_ANOMALIES_TO_DISPLAY, 'distance_to_center')
 
+            current_time = datetime.now()
+
+            # Update and decay existing anomalies in the history
+            to_remove = []  # List to keep track of keys to remove
+            for unique_id, meta in anomaly_history.items():
+                time_diff = (current_time - meta['timestamp']).total_seconds()
+                if time_diff > 30:  # Change this value based on your decay time
+                    to_remove.append(unique_id)  # Mark for removal
+                else:
+                    meta['status'] = 'Decaying'
+                    meta['timestamp'] = current_time  # Update timestamp
+
+            # Remove fully decayed anomalies
+            for unique_id in to_remove:
+                del anomaly_history[unique_id]
+
+            # Update the anomaly_history dictionary
+            for i, row in anomalies.iterrows():
+                unique_id = f"{row['dst_ip']}_{row['type']}_{row['size']}"
+                if unique_id not in anomaly_history:
+                    anomaly_history[unique_id] = {'timestamp': current_time, 'status': 'New'}
+                else:
+                    time_diff = (current_time - anomaly_history[unique_id]['timestamp']).total_seconds()
+                    anomaly_history[unique_id]['status'] = 'New' if time_diff < 30 else 'Decaying'
+
             # console.print(f"[yellow]Top {N_ANOMALIES_TO_DISPLAY} Anomaly Packets:[/yellow]\n{anomalies}")
-            
             table = Table(title=f"Top {N_ANOMALIES_TO_DISPLAY} Anomaly Packets")
 
             # Add headers
@@ -97,26 +126,45 @@ with progress:
             table.add_column("Type", style="cyan")
             table.add_column("Size", style="cyan")
             table.add_column("Distance", style="cyan")
+            table.add_column("Status", style="cyan")
 
             # Add rows, with special formatting for the top anomalies
             for i, row in enumerate(anomalies.itertuples()):
+                current_time = datetime.now()
+                packet_time = datetime.fromisoformat(str(row.timestamp))  # Explicitly convert to string
+                time_diff = (current_time - packet_time).total_seconds()
+                #status = "New" if time_diff < 300 else "Decaying"  # Change 300 as per your decay duration in seconds
+                status = "New" if time_diff < 30 else "Decaying"  # Change 30 as per your decay duration in seconds
+
                 if i < N_TOP_ANOMALIES:
-                    table.add_row(row.dst_ip, row.type, str(row.size), f"{row.distance_to_center}", style="red")
+                    table.add_row(row.dst_ip, row.type, str(row.size), f"{row.distance_to_center}", status, style="red")
                 else:
-                    table.add_row(row.dst_ip, row.type, str(row.size), f"{row.distance_to_center}")
+                    table.add_row(row.dst_ip, row.type, str(row.size), f"{row.distance_to_center}", status)
 
             console.print(table)
 
             # Highlighting the top N anomalies in a different color (e.g., red)
             for i, row in anomalies.head(N_TOP_ANOMALIES).iterrows():
                 anomaly_pca = X_pca[df.index.get_loc(i)]
-                ax1.scatter(anomaly_pca[0], anomaly_pca[1], c='red', s=row['size']/50)  # Use 'red' for top anomalies
-                ax1.text(anomaly_pca[0], anomaly_pca[1], f"{row['dst_ip']} ({row['type']}, {row['size']} bytes)", color='black')
+                current_time = datetime.now()
+                packet_time = datetime.fromisoformat(str(row.timestamp))  # Explicitly convert to string
+                time_diff = (current_time - packet_time).total_seconds()
 
-            # Displaying the other anomalies in orange
-            for i, row in anomalies.tail(len(anomalies) - N_TOP_ANOMALIES).iterrows():  # Remaining anomalies after the top ones
+                # Calculate alpha based on the time difference
+                #alpha_value = max(0.2, 1 - (time_diff / 300))  # Decaying over 5 minutes (300 seconds)
+                alpha_value = max(0.2, 1 - (time_diff / 30))  # Decaying over 30 seconds
+                ax1.scatter(anomaly_pca[0], anomaly_pca[1], c='red', s=row['size']/50, alpha=alpha_value)
+
+            for i, row in anomalies.head(N_TOP_ANOMALIES).iterrows():
+                unique_id = f"{row['dst_ip']}_{row['type']}_{row['size']}"
                 anomaly_pca = X_pca[df.index.get_loc(i)]
-                ax1.scatter(anomaly_pca[0], anomaly_pca[1], c='orange', s=row['size']/50)  # Use 'orange' for other anomalies
+                
+                alpha_value = 1.0  # Default opacity for "New"
+                if unique_id in anomaly_history:
+                    if anomaly_history[unique_id]['status'] == 'Decaying':
+                        alpha_value = 0.5  # Change this value to set your preferred opacity for "Decaying" anomalies
+                
+                ax1.scatter(anomaly_pca[0], anomaly_pca[1], c='red', s=row['size']/50, alpha=alpha_value)
                 ax1.text(anomaly_pca[0], anomaly_pca[1], f"{row['dst_ip']} ({row['type']}, {row['size']} bytes)", color='black')
 
             ax1.set_ylabel('Packet Size')

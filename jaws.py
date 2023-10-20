@@ -17,18 +17,7 @@ console = Console()
 progress = Progress(console=console)
 
 # Predefined colors for clusters, currently a single color, but accepts a list.
-cluster_colors = [
-    "#0000FF",  # Pure Blue
-    "#4682B4",  # Steel Blue
-    "#5F9EA0",  # Cadet Blue
-    "#7FFFD4",  # Aquamarine
-    "#00CED1",  # Dark Turquoise
-    "#20B2AA",  # Light Sea Green
-    "#40E0D0",  # Turquoise
-    "#48D1CC",  # Medium Turquoise
-    "#00FFFF",  # Cyan
-    "#B0E0E6",  # Powder Blue
-]
+cluster_colors = ["#0077be", "#0099cc", "#66b3e6", "#99ccff", "#cce0ff"]
 
 # New dictionary to hold cluster centers.
 cluster_centers = {}
@@ -45,6 +34,29 @@ N_TOP_ANOMALIES = 5
 # A larger window size will smooth out fluctuations and noise but could lag behind the real-time changes in data.
 moving_avg_window = []
 WINDOW_SIZE = 5 # 10
+
+# This function will apply PCA to reduce the data to 2 dimensions, and then apply DBSCAN to cluster the data. The function returns the reduced data and the labels.
+# Smaller eps: Will create more clusters and may classify more points as noise (anomalies in your case).
+# Larger eps: Will create fewer, larger clusters and potentially fewer noise points.
+# Smaller min_samples: Easier to form a cluster, which might lead to more, smaller clusters and potentially fewer noise points.
+# Larger min_samples: Harder to form a cluster, could lead to fewer, larger clusters and more noise points (anomalies).
+# A larger eps and smaller min_samples will create fewer, larger clusters. This setting is more lenient and is less likely to identify outliers.
+# A smaller eps and larger min_samples will create more clusters and will likely identify more points as noise or outliers. This setting is stricter.
+def apply_dbscan_and_pca(X_normalized, eps=0.5, min_samples=10):
+    pca = PCA(n_components=2)  # Reducing data to 2 dimensions
+    X_pca = pca.fit_transform(X_normalized)
+    # DBSCAN is a density-based clustering algorithm that groups points based on their distance to each other.
+    dbscan = DBSCAN(eps=eps, min_samples=min_samples)
+    labels = dbscan.fit_predict(X_normalized)
+    return X_pca, labels
+
+# Function to update cluster centers. This function will update the cluster centers based on the mean of the core samples in each cluster.
+def update_cluster_centers(X_normalized, labels):
+    unique_labels = set(labels)
+    for label in unique_labels:
+        if label != -1:
+            core_samples = X_normalized[labels == label]
+            cluster_centers[label] = np.mean(core_samples, axis=0)
 
 # Function to update anomaly history. Attempts to track anomalies based on their timestmp in the anomaly_history dictionary. Older anomalies are removed from the dictionary, and new anomalies are added. Updating the status in the console table from new to decaying and new again.
 def update_anomaly_history(anomalies, anomaly_history):
@@ -67,14 +79,6 @@ def update_anomaly_history(anomalies, anomaly_history):
             anomaly_history[unique_id] = {'timestamp': current_time, 'status': 'NEW'}
         else:
             anomaly_history[unique_id]['status'] = 'NEW'
-
-# Function to update cluster centers. This function will update the cluster centers based on the mean of the core samples in each cluster.
-def update_cluster_centers(X_normalized, labels):
-    unique_labels = set(labels)
-    for label in unique_labels:
-        if label != -1:
-            core_samples = X_normalized[labels == label]
-            cluster_centers[label] = np.mean(core_samples, axis=0)
 
 def display_anomalies(anomalies, N_ANOMALIES_TO_DISPLAY):
     table = Table() #title=f"Top {N_ANOMALIES_TO_DISPLAY} Anomaly Packets"
@@ -99,24 +103,6 @@ def display_anomalies(anomalies, N_ANOMALIES_TO_DISPLAY):
 
     console.print(table)
 
-# This function will apply PCA to reduce the data to 2 dimensions, and then apply DBSCAN to cluster the data. The function returns the reduced data and the labels.
-# Smaller eps: Will create more clusters and may classify more points as noise (anomalies in your case).
-# Larger eps: Will create fewer, larger clusters and potentially fewer noise points.
-# Smaller min_samples: Easier to form a cluster, which might lead to more, smaller clusters and potentially fewer noise points.
-# Larger min_samples: Harder to form a cluster, could lead to fewer, larger clusters and more noise points (anomalies).
-# A larger eps and smaller min_samples will create fewer, larger clusters. This setting is more lenient and is less likely to identify outliers.
-# A smaller eps and larger min_samples will create more clusters and will likely identify more points as noise or outliers. This setting is stricter.
-def apply_dbscan_and_pca(X_normalized, eps=0.5, min_samples=10):
-    pca = PCA(n_components=2)  # Reducing data to 2 dimensions
-    X_pca = pca.fit_transform(X_normalized)
-    # DBSCAN is a density-based clustering algorithm that groups points based on their distance to each other.
-    dbscan = DBSCAN(eps=eps, min_samples=min_samples)
-    labels = dbscan.fit_predict(X_normalized)
-    return X_pca, labels
-
-# Initialize figure with reduced dimensions and display the plot.
-fig, ax1 = plt.subplots(1, 1, figsize=(15, 7)) # Change the graph dimensions, in inches.
-
 # This function will plot the anomalies on the 2D plot and annotate them with their destination IP, type, and size.
 def plot_and_annotate_anomalies(ax, anomalies, X_pca, labels, df):
     # Sort anomalies based on their distance to cluster center
@@ -131,9 +117,13 @@ def plot_and_annotate_anomalies(ax, anomalies, X_pca, labels, df):
     for idx, row in enumerate(sorted_anomalies.itertuples()):
         point = X_pca[row.Index]
         color = 'red' if idx < N_TOP_ANOMALIES else 'blue' #color of plotted anomalies.
-        ax.scatter(point[0], point[1], c=color, s=row.size, zorder=5)  # Adjust anomaly plots, zorder ensures anomalies are above cluster plot.
+        ax.scatter(point[0], point[1], c=color, s=row.size, zorder=3)  # zorder ensures points are above cluster
         if idx < N_ANOMALIES_TO_DISPLAY:
             ax.annotate(f"{row.dst_ip}, {row.type}, {row.size}", (point[0], point[1]), textcoords="offset points", xytext=(0, 5), ha='center')
+
+# Initialize figure with reduced dimensions and display the plot.
+fig, ax1 = plt.subplots(1, 1, figsize=(15, 7)) # Change the graph dimensions, in inches.
+plt.tight_layout() # Tight layout, reducing padding. Comment out if needed.
 
 # Main loop. This loop will read the JSON file, convert the data to a Pandas dataframe, and then apply DBSCAN and PCA to cluster the data. The loop will then update the plot and display the anomalies in the console.
 with progress:
@@ -185,7 +175,7 @@ with progress:
                 # Plotting the points in each cluster. The size of the point is based on the size of the packet.
                 points_in_cluster = np.array([X_pca[i] for i in range(len(X_pca)) if labels[i] == label])
                 sizes = [df.iloc[i]['moving_avg_size'] for i in range(len(X_pca)) if labels[i] == label]
-                ax1.scatter(points_in_cluster[:, 0], points_in_cluster[:, 1], c=color, s=np.array(sizes)/50) # Adjust Cluster plots
+                ax1.scatter(points_in_cluster[:, 0], points_in_cluster[:, 1], c=color, s=np.array(sizes)/50)
             
             # Distance to nearest cluster center. This will be used to determine which points are anomalies.
             distances = []
@@ -214,7 +204,8 @@ with progress:
             
             # Add this line to plot the cluster centers.
             plt.title(f"Packet Clusters (Total Packets: {len(df)})")
-            plt.tight_layout() # Tight layout, reducing padding. Comment out if needed.
+            #plt.xlabel(f'Principal Component 1 ({explained_var[0]*100:.2f}%)')
+            #plt.ylabel(f'Principal Component 2 ({explained_var[1]*100:.2f}%)')
             plt.draw()
             plt.pause(0.01)
 

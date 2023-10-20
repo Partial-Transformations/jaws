@@ -14,7 +14,7 @@ console = Console()
 file_path_relative = "./packets.json"
 ec2_ip = "ADDR"
 ec2_username = "ec2-user" # ec2-user is common...
-ec2_key_path_relative = "./KEY.pem"
+ec2_key_path_relative = "./anomaly_test_key.pem"
 
 # Convert relative paths to absolute paths
 file_path = os.path.abspath(file_path_relative)

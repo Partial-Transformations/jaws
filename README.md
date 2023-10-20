@@ -15,3 +15,5 @@ Or... you can setup a free Amazon EC2 instance and upload `listener.py` to it. R
 ### Im sure there is lots I could improve on, there are limitations to writing console toys with ChatGPT... but leave some issues or something:
 
 Updates: Added `hunt.py` which requests an IP address, just copy it from `jaws`, and returns a ChatGPT lookup with common parameters for IP address ownership like location :0 as well as a time series graph of activity for that `dst_ip`.
+
+![the flow!](/assets/flow.png)

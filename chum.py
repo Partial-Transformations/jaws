@@ -17,7 +17,7 @@ def generate_random_data(size):
 
 def main():
     # Get file size from user.
-    mock_file_size_MB = float(input("Enter the file size in MB: "))
+    mock_file_size_MB = float(input("Enter a file size in MB: "))
     MOCK_FILE_SIZE = int(mock_file_size_MB * 1024 * 1024)
 
     # Calculate the total number of chunks to send.
@@ -39,7 +39,7 @@ def main():
             
             # Send file size to server.
             with Progress() as progress:
-                task = progress.add_task("[cyan]Transferring...", total=total_chunks)
+                task = progress.add_task("[cyan]Hold onto your butts...", total=total_chunks)
                 
                 for i in range(total_chunks):
                     chunk_size = CHUNK_SIZE if (i < total_chunks - 1) else (MOCK_FILE_SIZE % CHUNK_SIZE)
@@ -53,11 +53,11 @@ def main():
                     time.sleep(random_delay)
             
             # Close the connection.
-            print("File transfer simulation complete.")
+            print("File exfiltration simulation complete! Clever girl...")
 
 if __name__ == "__main__":
     while True:
         main()
-        repeat = input("Would you like to run again? (y/n): ")
+        repeat = input("Would you like to steal another file? (y/n): ")
         if repeat.lower() != 'y':
             break

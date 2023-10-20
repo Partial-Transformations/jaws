@@ -16,24 +16,35 @@ from rich.table import Table
 console = Console()
 progress = Progress(console=console)
 
-# Variables for defining the number of anomalies to display in the console, followed by the numner of "Top" anomalies to call out in red.
-N_ANOMALIES_TO_DISPLAY = 20
-N_TOP_ANOMALIES = 5
-
 # Predefined colors for clusters, currently a single color, but accepts a list.
-cluster_colors = ["#1f77b4"]
-    
-# Key will be some unique identifier for an anomaly, value will be metadata like timestamp.
-anomaly_history = {}
+cluster_colors = [
+    "#0000FF",  # Pure Blue
+    "#4682B4",  # Steel Blue
+    "#5F9EA0",  # Cadet Blue
+    "#7FFFD4",  # Aquamarine
+    "#00CED1",  # Dark Turquoise
+    "#20B2AA",  # Light Sea Green
+    "#40E0D0",  # Turquoise
+    "#48D1CC",  # Medium Turquoise
+    "#00FFFF",  # Cyan
+    "#B0E0E6",  # Powder Blue
+]
 
 # New dictionary to hold cluster centers.
 cluster_centers = {}
+
+# Key will be some unique identifier for an anomaly, value will be metadata like timestamp.
+anomaly_history = {}
+
+# Variables for defining the number of anomalies to display in the console, followed by the numner of "Top" anomalies to call out in red.
+N_ANOMALIES_TO_DISPLAY = 20
+N_TOP_ANOMALIES = 5
 
 # More variables for moving average and its window size.
 # A small window size will yield a moving average that closely follows the original data but may also include noise.
 # A larger window size will smooth out fluctuations and noise but could lag behind the real-time changes in data.
 moving_avg_window = []
-WINDOW_SIZE = 5 # 10 
+WINDOW_SIZE = 5 # 10
 
 # Function to update anomaly history. Attempts to track anomalies based on their timestmp in the anomaly_history dictionary. Older anomalies are removed from the dictionary, and new anomalies are added. Updating the status in the console table from new to decaying and new again.
 def update_anomaly_history(anomalies, anomaly_history):
@@ -44,7 +55,7 @@ def update_anomaly_history(anomalies, anomaly_history):
         if (current_time - meta['timestamp']).total_seconds() > 30:
             to_remove.append(unique_id)
         else:
-            meta['status'] = 'Decaying'
+            meta['status'] = 'DECAYING'
             meta['timestamp'] = current_time
 
     for unique_id in to_remove:
@@ -53,9 +64,9 @@ def update_anomaly_history(anomalies, anomaly_history):
     for i, row in anomalies.iterrows():
         unique_id = f"{row['dst_ip']}_{row['dst_port']}_{row['type']}_{row['size']}"
         if unique_id not in anomaly_history:
-            anomaly_history[unique_id] = {'timestamp': current_time, 'status': 'New'}
+            anomaly_history[unique_id] = {'timestamp': current_time, 'status': 'NEW'}
         else:
-            anomaly_history[unique_id]['status'] = 'New'
+            anomaly_history[unique_id]['status'] = 'NEW'
 
 # Function to update cluster centers. This function will update the cluster centers based on the mean of the core samples in each cluster.
 def update_cluster_centers(X_normalized, labels):
@@ -66,19 +77,19 @@ def update_cluster_centers(X_normalized, labels):
             cluster_centers[label] = np.mean(core_samples, axis=0)
 
 def display_anomalies(anomalies, N_ANOMALIES_TO_DISPLAY):
-    table = Table(title=f"Top {N_ANOMALIES_TO_DISPLAY} Anomaly Packets")
+    table = Table() #title=f"Top {N_ANOMALIES_TO_DISPLAY} Anomaly Packets"
     
     # Table for displaying anomalies in the console.
-    table.add_column("Destination IP", style="cyan")
-    table.add_column("Port", style="cyan")  
-    table.add_column("Type", style="cyan")
-    table.add_column("Size", style="cyan")
-    table.add_column("Distance", style="cyan")
-    table.add_column("Status", style="cyan")
+    table.add_column("DEST IP", style="cyan")
+    table.add_column("PORT", style="cyan")  
+    table.add_column("TYPE", style="cyan")
+    table.add_column("SIZE", style="cyan")
+    table.add_column("DIST", style="cyan")
+    table.add_column("STATUS", style="cyan")
     
     # Loop through the anomalies dataframe and add each row to the table. The first N_TOP_ANOMALIES will be highlighted in red.
     for i, row in enumerate(anomalies.itertuples()):
-        status = "New" if row.distance_to_center < 30 else "Decaying"  # This is the distance from the cluster center. Currently set to 30. 
+        status = "NEW" if row.distance_to_center < 30 else "DECAYING"  # This is the distance from the cluster center. Currently set to 30. 
         
         # This produces the list of top anomalies in red, and the rest of the top 20 in default coloring.
         if i < N_TOP_ANOMALIES:
@@ -89,7 +100,13 @@ def display_anomalies(anomalies, N_ANOMALIES_TO_DISPLAY):
     console.print(table)
 
 # This function will apply PCA to reduce the data to 2 dimensions, and then apply DBSCAN to cluster the data. The function returns the reduced data and the labels.
-def apply_dbscan_and_pca(X_normalized, eps=0.1, min_samples=100):
+# Smaller eps: Will create more clusters and may classify more points as noise (anomalies in your case).
+# Larger eps: Will create fewer, larger clusters and potentially fewer noise points.
+# Smaller min_samples: Easier to form a cluster, which might lead to more, smaller clusters and potentially fewer noise points.
+# Larger min_samples: Harder to form a cluster, could lead to fewer, larger clusters and more noise points (anomalies).
+# A larger eps and smaller min_samples will create fewer, larger clusters. This setting is more lenient and is less likely to identify outliers.
+# A smaller eps and larger min_samples will create more clusters and will likely identify more points as noise or outliers. This setting is stricter.
+def apply_dbscan_and_pca(X_normalized, eps=0.5, min_samples=10):
     pca = PCA(n_components=2)  # Reducing data to 2 dimensions
     X_pca = pca.fit_transform(X_normalized)
     # DBSCAN is a density-based clustering algorithm that groups points based on their distance to each other.
@@ -98,9 +115,7 @@ def apply_dbscan_and_pca(X_normalized, eps=0.1, min_samples=100):
     return X_pca, labels
 
 # Initialize figure with reduced dimensions and display the plot.
-fig, ax1 = plt.subplots(1, 1, figsize=(14, 7)) # Change the graph dimensions, in inches.
-plt.show(block=False)
-plt.tight_layout() # Tight layout, reducing padding. Comment out if needed.
+fig, ax1 = plt.subplots(1, 1, figsize=(15, 7)) # Change the graph dimensions, in inches.
 
 # This function will plot the anomalies on the 2D plot and annotate them with their destination IP, type, and size.
 def plot_and_annotate_anomalies(ax, anomalies, X_pca, labels, df):
@@ -115,15 +130,15 @@ def plot_and_annotate_anomalies(ax, anomalies, X_pca, labels, df):
     # The color of the annotation will be red for the first N_TOP_ANOMALIES, and black for the rest.
     for idx, row in enumerate(sorted_anomalies.itertuples()):
         point = X_pca[row.Index]
-        color = 'red' if idx < N_TOP_ANOMALIES else 'black'
-        ax.scatter(point[0], point[1], c=color, s=row.size / 50, zorder=3)  # zorder ensures points are above cluster
+        color = 'red' if idx < N_TOP_ANOMALIES else 'blue' #color of plotted anomalies.
+        ax.scatter(point[0], point[1], c=color, s=row.size, zorder=5)  # Adjust anomaly plots, zorder ensures anomalies are above cluster plot.
         if idx < N_ANOMALIES_TO_DISPLAY:
             ax.annotate(f"{row.dst_ip}, {row.type}, {row.size}", (point[0], point[1]), textcoords="offset points", xytext=(0, 5), ha='center')
 
 # Main loop. This loop will read the JSON file, convert the data to a Pandas dataframe, and then apply DBSCAN and PCA to cluster the data. The loop will then update the plot and display the anomalies in the console.
 with progress:
     # This progress bar will refresh every 30 seconds.
-    task_id = progress.add_task("[cyan]Processing next update, refreshing in...", total=30)
+    task_id = progress.add_task("[cyan]Waiting on packets... refreshing in...", total=30)
     while True:
         try:
             df = pd.read_json('packets.json', orient='records')
@@ -164,13 +179,13 @@ with progress:
             # Plotting the clusters. The size of the point is based on the size of the packet.
             for label in unique_labels:
                 if label == -1:  # Noise points
-                    color = '#000000'
+                    color = '#1F2BB5'
                 else:
                     color = cluster_colors[label % len(cluster_colors)]
                 # Plotting the points in each cluster. The size of the point is based on the size of the packet.
                 points_in_cluster = np.array([X_pca[i] for i in range(len(X_pca)) if labels[i] == label])
                 sizes = [df.iloc[i]['moving_avg_size'] for i in range(len(X_pca)) if labels[i] == label]
-                ax1.scatter(points_in_cluster[:, 0], points_in_cluster[:, 1], c=color, s=np.array(sizes)/50)
+                ax1.scatter(points_in_cluster[:, 0], points_in_cluster[:, 1], c=color, s=np.array(sizes)/50) # Adjust Cluster plots
             
             # Distance to nearest cluster center. This will be used to determine which points are anomalies.
             distances = []
@@ -198,12 +213,13 @@ with progress:
             plot_and_annotate_anomalies(ax1, anomalies, X_pca, labels, df)
             
             # Add this line to plot the cluster centers.
-            ax1.set_ylabel('Principal Component 2')
+            plt.title(f"Packet Clusters (Total Packets: {len(df)})")
+            plt.tight_layout() # Tight layout, reducing padding. Comment out if needed.
             plt.draw()
             plt.pause(0.01)
 
             # Update the progress bar.
-            console.print(f"[green]Updated 2D plot with {len(df)} packets.[/green]")
+            console.print(f"[green]Updating 2D plot of packet clusters using: {len(df)} packets.[/green]")
             progress.update(task_id, completed=30)
             sleep(1)
 

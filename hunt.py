@@ -8,16 +8,21 @@ openai.api_key = "KEY"
 
 # Function to get IP information from GPT-3
 def get_ip_info_from_gpt(ip_address):
-    combined_prompt = f"Provide information about IP address {ip_address}"
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=[
-            {"role": "system", "content": "You are looking up IP addresses that show up as anomalies on our network, we would like you to return as much of the requested information as possible. "}, {"role": "user", "content": f"Provide information about IP address {ip_address}, returning ISP, Services, Country, State/Region, City, and Latitude/Longitude."}
-        ],
-        max_tokens=500
-    )
-    ip_info = response.choices[0]['message']['content']
-    return ip_info
+    try:
+        combined_prompt = f"Provide information about IP address {ip_address}"
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are looking up IP addresses that show up as anomalies on our network, we would like you to return as much of the requested information as possible."},
+                {"role": "user", "content": f"Provide information about IP address {ip_address}, returning ISP, Services, Country, State/Region, City, and Latitude/Longitude."}
+            ],
+            max_tokens=500
+        )
+        ip_info = response.choices[0]['message']['content']
+        return ip_info
+    except openai.error.OpenAIError as e:
+        print("[red][error] OpenAI API error: [/red]", e)
+        return None
 
 # Function to convert timestamp to datetime. This will be used to plot the time series.
 def convert_to_datetime(timestamp):
@@ -28,7 +33,7 @@ def filter_and_plot(dst_ip):
     try:
         df = pd.read_json('packets.json', orient='records')
     except (FileNotFoundError, pd.errors.EmptyDataError):
-        print("[error] Failed to load packets.json or the file is empty.")
+        print("[red][error] Failed to load packets.json or the file is empty...[/red]")
         return
 
     # Print all packets with dst_ip
@@ -44,11 +49,12 @@ def filter_and_plot(dst_ip):
 
     # Get and display IP information.
     ip_info = get_ip_info_from_gpt(dst_ip)
-    print("\nInformation about the IP address:")
-    print(ip_info)
+    if ip_info is not None:
+        print("\nInformation about the IP address:")
+        print(ip_info)
 
     # Time Series Visualization.
-    plt.figure(figsize=(15, 4)) # Set figure size, in inches.
+    plt.figure(figsize=(15, 4))
 
     # Convert timestamp to datetime.
     filtered_df.loc[:, 'timestamp'] = filtered_df['timestamp'].apply(convert_to_datetime)
@@ -64,5 +70,5 @@ def filter_and_plot(dst_ip):
     plt.show()
 
 if __name__ == "__main__":
-    dst_ip_to_filter = input("Enter the dst_ip you'd like to visualize: ")
+    dst_ip_to_filter = input("Enter the dst_ip you'd like intel on: ")
     filter_and_plot(dst_ip_to_filter)

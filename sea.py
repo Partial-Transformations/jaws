@@ -28,9 +28,9 @@ def process_packet(packet):
 
     # Print packet information to console. Color the packet red if it was sent to the server, yellow otherwise.
     if packet_info['dst_ip'] == 'ADDR':
-        console.print(f"[red]Captured packet: {packet_info}[/red]")
+        console.print(f"[red]CHUM packet: {packet_info}[/red]")
     else:
-        console.print(f"[yellow]Captured packet: {packet_info}[/yellow]")
+        console.print(f"[yellow]LIVE packet: {packet_info}[/yellow]")
 
     # Add packet information to dataframe. This will be saved to a file later.
     new_row = pd.Series(packet_info, name='x')
@@ -48,7 +48,7 @@ def process_packet(packet):
         # Save to file
         combined_data.to_json('packets.json', orient='records')
         # Print message to console
-        console.print(f"[green]Saved {batch_size} packets to stable file.[/green]")
+        console.print(f"[green]Saved {batch_size} packets to JSON file.[/green]")
 
         # Clear dataframe
         df = pd.DataFrame(columns=['packet_id', 'type', 'size', 'src_ip', 'dst_ip', 'src_port', 'dst_port', 'timestamp'])

@@ -16,4 +16,6 @@ Or... you can setup a free Amazon EC2 instance and upload `listener.py` to it. R
 
 Updates: Added `hunt.py` which requests an IP address, just copy it from `jaws`, and returns a ChatGPT lookup with common parameters for IP address ownership like location :0 as well as a time series graph of activity for that `dst_ip`.
 
+Updates: Added `push.py` for those using the free EC2 instance. This will ask for a file name and the EC2 parameters and push that file to the server `/tmp`. I created this because I am using an edge device to capture packets from a remote network and needed a way to quickly and easily get the file off the edge device when it regained connectivity. *Educational purposes only, the "edge device" and "remote network" are actually a Clockwork uConsole, LAN Tap, and my home network.
+
 ![the flow!](/assets/flow.png)

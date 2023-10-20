@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from rich import print
 
 # Replace with your OpenAI API key.
-openai.api_key = "KEY"
+openai.api_key = "KEY ASSHOLE!"
 
 # Function to get IP information from GPT-3
 def get_ip_info_from_gpt(ip_address):

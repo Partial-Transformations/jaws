@@ -44,7 +44,7 @@ WINDOW_SIZE = 5 # 10
 # Larger min_samples: Harder to form a cluster, could lead to fewer, larger clusters and more noise points (anomalies).
 # A larger eps and smaller min_samples will create fewer, larger clusters. This setting is more lenient and is less likely to identify outliers.
 # A smaller eps and larger min_samples will create more clusters and will likely identify more points as noise or outliers. This setting is stricter.
-def apply_dbscan_and_pca(data_normalized, eps=0.9, min_samples=10):
+def apply_dbscan_and_pca(data_normalized, eps=0.1, min_samples=5):
     pca = PCA(n_components=2)  # Reducing data to 2 dimensions
     data_pca = pca.fit_transform(data_normalized)
     # DBSCAN is a density-based clustering algorithm that groups points based on their distance to each other.
@@ -151,8 +151,8 @@ def display_anomalies(anomalies, N_ANOMALIES_TO_DISPLAY):
 
 # Main loop. This loop will read the JSON file, convert the data to a Pandas dataframe, and then apply DBSCAN and PCA to cluster the data. The loop will then update the plot and display the anomalies in the console.
 with progress:
-    # This progress bar will refresh the program every 10 seconds.
-    task_id = progress.add_task("[cyan]Waiting on packets... refreshing in...", total=10)
+    # This progress bar will refresh the program every 30 seconds.
+    task_id = progress.add_task("[cyan]Waiting on packets...", total=30)
     while True:
         try:
             # Read the JSON file and convert it to a Pandas dataframe.
@@ -236,8 +236,6 @@ with progress:
             
             # Add this line to plot the cluster centers.
             plt.title(f"Packet Clusters (Total Packets: {len(df)})")
-            #plt.xlabel(f'Principal Component 1 ({explained_var[0]*100:.2f}%)')
-            #plt.ylabel(f'Principal Component 2 ({explained_var[1]*100:.2f}%)')
             plt.draw()
             plt.pause(0.01)
 
@@ -247,19 +245,19 @@ with progress:
             display_anomalies(anomalies, N_ANOMALIES_TO_DISPLAY)
 
             # Update the progress bar.
-            console.print(f"[green]Updating 2D plot of packet clusters using: {len(df)} packets.[/green]")
-            progress.update(task_id, completed=10)
+            console.print(f"[green]Updated clusters using {len(df)} packets.[/green]")
+            progress.update(task_id, completed=30) # Update the progress bar.
             sleep(1)
 
             # Reset the progress bar.
             progress.reset(task_id)
-            for i in range(10):
+            for i in range(30): # Update the progress bar.
                 sleep(1)
                 progress.update(task_id, advance=1)
 
         # Error handling. This will catch any errors and log them to the error_log.txt file.
         except KeyboardInterrupt:
-            console.print("[yellow]Program manually terminated by user.[/yellow]")
+            console.print("[yellow]Program manually terminated by user...[/yellow]")
             plt.close('all')  # Closes all Matplotlib windows.
             break  # Exit the while loop
 

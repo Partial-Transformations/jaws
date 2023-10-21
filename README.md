@@ -12,8 +12,9 @@ https://www.brianlinkletter.com/2023/02/network-emulators-and-network-simulators
 
 Or... you can setup a free Amazon EC2 instance and upload `listener.py` to it. Run the listener, and then run `sea.py` & `chum.py` on the local machine. Chum will create TLS encrypted packets and send them to the EC2 instance. the chum program contains some variables adjusting the style of packet, but in general it allows the end-user to give it a "file size" and it simulates exfiltration.
 
-![the flow!](/assets/diagram_2.png)
 ![the flow!](/assets/flow.png)
+
+![the diagram!](/assets/diagram.png)
 
 ### Im sure there is lots I could improve on, there are limitations to writing console toys with ChatGPT... but leave some issues or something:
 

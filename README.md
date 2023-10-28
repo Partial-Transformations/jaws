@@ -1,7 +1,7 @@
 # JAWS
 ![hehe](/assets/ohey.jpeg)
 
-A little side project demonstrating the use of machine learning in cybersecurity by applying cluster analysis to network traffic. To add to it, Ive almost strictly been collabortating with ChatGPT on my side projects and this was one of those. Entirelly written by ChatGPT, but under strict supervision by me, and in some situations (threading for instance), could not get ChatGPT to reason through the challange and so abandoned the approach to maintain a full AI written outcome.
+A little side project demonstrating the use of machine learning in cybersecurity by applying cluster analysis to network traffic. To make things fun, Ive been collabortating with ChatGPT on my side projects and this is one of those. Entirelly written by ChatGPT, but supervisied, reviewed, and tested by me, and in some situations (threading for instance), I could not get ChatGPT to reason through the challange and so abandoned the approach to maintain a full AI written outcome*
 
 You can then run `sea.py`, which uses `pyshark` to capture all packets on the desired interface. In this instance, we used our local Ethernet interface. The sea program, to avoid complexities (ChatGPT failed on several attempts to incorporating threading), writes batches of 100 packets to a pandas dataframe and then saves that to a stable file called `packets.json` -- You can inspect `sea.py` to see how it works what it is capturing.
 
@@ -20,6 +20,6 @@ Updates: Added `hunt.py` which requests an IP address, just copy it from `jaws`,
 
 Updates: Added `push.py` for those using the free EC2 instance approach. This contains variables for a file name (currently set to our packets file) and the EC2 parameters and then push that file to the server `/home/ec2-user/packet_captures/`. It also appends the datetime to the file name. I created this because I am using an edge device to capture packets from a remote network and needed a way to quickly and easily get the file off the edge device when it regained connectivity. *Educational purposes only, the "edge device" and "remote network" are actually a Clockwork uConsole, LAN Tap, and my home network.
 
-Updates: I started writing more comments and tweaking the code, particually `jaws.py`, as I could tell the anomaly history did not work fully.
+*Updates: I started writing more comments and tweaking the code, particually `jaws.py`, as I could tell the anomaly history did not work fully.
 
 Updates: Added `map.py`, which uses igraph to output a network map from packets.json. This is a pre-anomaly analysis map. I will expand on this in the future.

@@ -23,3 +23,5 @@ Updates: Added `hunt.py` which requests an IP address, just copy it from `jaws`,
 Updates: Added `push.py` for those using the free EC2 instance approach. This contains variables for a file name (currently set to our packets file) and the EC2 parameters and then push that file to the server `/home/ec2-user/packet_captures/`. It also appends the datetime to the file name. I created this because I am using an edge device to capture packets from a remote network and needed a way to quickly and easily get the file off the edge device when it regained connectivity. *Educational purposes only, the "edge device" and "remote network" are actually a Clockwork uConsole, LAN Tap, and my home network.
 
 Updates: I started writing more comments and tweaking the code, particually `jaws.py`, as I could tell the anomaly history did not work fully.
+
+Updates: Added `map.py`, which uses igraph to output a network map from packets.json. This is a pre-anomaly analysis map. I will expand on this in the future.

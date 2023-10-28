@@ -2,7 +2,7 @@ import math
 import json
 import igraph as ig
 
-min_size = 10
+min_size = 25
 max_size = 50
 
 def hits_algorithm(graph, max_iter=100, tol=1e-06):
@@ -83,6 +83,7 @@ g.vs["authority_score"] = authority_score
 # Calculate betweenness centrality
 g.vs["betweenness"] = g.betweenness(directed=True)
 
+"""
 # Create clusters based on hub score
 median_hub_score = sorted(hub_score)[len(hub_score) // 2]
 clusters = ["High Hub Score" if score >= median_hub_score else "Low Hub Score" for score in hub_score]
@@ -99,14 +100,16 @@ for idx, cluster in enumerate(clusters):
     else:
         positions[idx][1] += 100  # Shift downwards
 
-# Use Fruchterman-Reingold layout with modified starting positions
-layout = g.layout("fr", seed=positions)
+layout = g.layout("fr, seed=positions")
+"""
+layout = g.layout("kk")
+
 
 scaled_hub_scores = [min_size + (math.log(score + 1) * (max_size - min_size) / math.log(1 + max_hub_score)) for score in normalized_hub_score]
 
 visual_style = {
     "vertex_size": scaled_hub_scores,
-    "vertex_label": [f"{v['name']}\nAuth: {v['authority_score']:.2f}\nHub: {v['hub_score']:.2f}\nBetw: {v['betweenness']:.2f}" for v in g.vs],
+    "vertex_label": [f"{v['name']}\nAuth: {v['authority_score']:.4f}\nHub: {v['hub_score']:.4f}\nBetw: {v['betweenness']:.4f}" for v in g.vs],
     "vertex_color": ["red" if score > max(hub_score)/2 else "blue" for score in hub_score],
     "edge_color": "#D3D3D3",
     "background": "white",
@@ -114,4 +117,4 @@ visual_style = {
     "margin": 100
 }
 
-ig.plot(g, layout=layout, target="network_graph_with_scores.png", **visual_style)
+ig.plot(g, layout=layout, target="network_graph.png", **visual_style)

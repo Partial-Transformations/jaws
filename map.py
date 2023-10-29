@@ -113,7 +113,7 @@ visual_style = {
     "vertex_color": ["red" if score > max(hub_score)/2 else "blue" for score in hub_score],
     "edge_color": "#D3D3D3",
     "background": "white",
-    "bbox": (1400, 1400),
+    "bbox": (600, 600),
     "margin": 100
 }
 

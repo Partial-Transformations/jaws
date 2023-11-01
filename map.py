@@ -83,27 +83,7 @@ g.vs["authority_score"] = authority_score
 # Calculate betweenness centrality
 g.vs["betweenness"] = g.betweenness(directed=True)
 
-"""
-# Create clusters based on hub score
-median_hub_score = sorted(hub_score)[len(hub_score) // 2]
-clusters = ["High Hub Score" if score >= median_hub_score else "Low Hub Score" for score in hub_score]
-g.vs["cluster"] = clusters
-
-# Adjust layout for clustering
-# Get positions from the original layout
-positions = g.layout("fr").coords
-
-# Separate nodes based on clusters
-for idx, cluster in enumerate(clusters):
-    if cluster == "High Hub Score":
-        positions[idx][1] -= 100  # Shift upwards
-    else:
-        positions[idx][1] += 100  # Shift downwards
-
-layout = g.layout("fr, seed=positions")
-"""
 layout = g.layout("kk")
-
 
 scaled_hub_scores = [min_size + (math.log(score + 1) * (max_size - min_size) / math.log(1 + max_hub_score)) for score in normalized_hub_score]
 

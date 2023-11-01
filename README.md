@@ -5,7 +5,7 @@ A little side project demonstrating the use of machine learning in cybersecurity
 
 You can then run `sea.py`, which uses `pyshark` to capture all packets on the desired interface. In this instance, we used our local Ethernet interface. The sea program, to avoid complexities (ChatGPT failed on several attempts to incorporating threading), writes batches of 100 packets to a pandas dataframe and then saves that to a stable file called `packets.json` -- You can inspect `sea.py` to see how it works what it is capturing.
 
-The big boi program, `jaws.py`. Consumers all packet data in `packets.json` and processes it through DBSCAN to output clusters and plot those clusters along with labels on a 2D graph. The program also outputs a list of Top 20 Anomalies in the console with the top 5 highlighed in red. Every 30 seconds the data refreshes, in full... tried several attempts to handle only new packets but failed to get ChatGPT to reason through the problem. I have run the programs together past 1m packets with little memory impact.
+The big boi program, `jaws.py`. Consumes all packet data in `packets.json` and processes it through DBSCAN to output clusters and plot those clusters along with labels on a 2D graph. The program also outputs a list of Top 20 Anomalies in the console with the top 5 highlighed in red. Every 30 seconds the data refreshes, in full... tried several attempts to handle only new packets but failed to get ChatGPT to reason through that problem as well. I have run the programs together past 1m packets with little memory issues.
 
 To bring it all full circle, you can either generate packets using a tool like the ones found on this list:
 https://www.brianlinkletter.com/2023/02/network-emulators-and-network-simulators-2023/

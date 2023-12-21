@@ -1,4 +1,5 @@
 anomaly_test_key.pem
-packets.json
-error_log.txt
-network_graph.png
+/v1
+packets_base_443.csv
+packets_exfil_443.csv
+packets_exfil_40687.csv

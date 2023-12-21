@@ -4,19 +4,15 @@ from paramiko import SSHClient, AutoAddPolicy
 from rich.console import Console
 from rich.traceback import install
 
-# Install rich traceback for better error display
+# A utiltiy to push the packets.csv file to a EC2 instance (or other remote) for later download. This is useful if you are running this on a temporary end-point or edge network.
+
 install()
-
-# Initialize the rich console
 console = Console()
-
-# Set your variables here
 file_path_relative = "./packets.json"
-ec2_ip = "ADDR"
-ec2_username = "ec2-user" # ec2-user is common...
-ec2_key_path_relative = "./anomaly_test_key.pem"
+ec2_ip = "AWS DNS IP ADDR" # Replace with your EC2 instance's IP address
+ec2_username = "ec2-user" # Replace with your EC2 instance's username
+ec2_key_path_relative = "./key.pem" # Replace with the path to your EC2 key
 
-# Convert relative paths to absolute paths
 file_path = os.path.abspath(file_path_relative)
 ec2_key_path = os.path.abspath(ec2_key_path_relative)
 
@@ -26,12 +22,10 @@ def transfer_file_to_ec2(file_path, ec2_ip, ec2_username, ec2_key_path):
         ssh.set_missing_host_key_policy(AutoAddPolicy())
         ssh.connect(ec2_ip, username=ec2_username, key_filename=ec2_key_path)
 
-        # Generate the current date and time to append to the filename
         current_time = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
         file_name, file_extension = os.path.splitext(os.path.basename(file_path))
         remote_file_name = f"{file_name}_{current_time}{file_extension}"
 
-        # Assuming /tmp as the destination directory
         remote_path = f"/home/ec2-user/packet_captures/{remote_file_name}"
 
         with console.status("[bold green]Transferring the file..."):

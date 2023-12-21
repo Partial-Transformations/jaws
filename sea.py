@@ -1,60 +1,71 @@
 import pyshark
 import pandas as pd
 from rich.console import Console
+import os
 
-# Initialize rich console
 console = Console()
-# Variable for batch size. This is the number of packets to save to the file at a time.
 batch_size = 100
-# Initialize dataframe. This will be used to store packets in batches.
+#ip_blacklist = ['IP ADDR']
+chum_addr = 'IP ADDR'
 df = pd.DataFrame(columns=['packet_id', 'type', 'size', 'src_ip', 'dst_ip', 'src_port', 'dst_port', 'timestamp'])
-packet_id = 0  # Initialize packet ID
 
-# Function to process packets. This will be called for each packet captured.
+if os.path.exists('packets.csv'):
+    existing_data = pd.read_csv('packets.csv')
+    if not existing_data.empty:
+        packet_id = existing_data['packet_id'].max() + 1
+    else:
+        packet_id = 0
+else:
+    packet_id = 0
+
 def process_packet(packet):
     global df, packet_id
-
-    # Create a dictionary with packet information. This will be used to create a dataframe.
     packet_info = {
-        "packet_id": packet_id, # Incremented below
-        "type": packet.highest_layer, # Highest layer of the OSI model that the packet was captured at
-        "size": len(packet), # Size of the packet in bytes
-        "src_ip": packet.ip.src if 'IP' in packet else 'N/A', # Source IP address
-        "dst_ip": packet.ip.dst if 'IP' in packet else 'N/A', # Destination IP address
-        "src_port": packet[packet.transport_layer].srcport if hasattr(packet, 'transport_layer') and packet.transport_layer else 'N/A', # Source port
-        "dst_port": packet[packet.transport_layer].dstport if hasattr(packet, 'transport_layer') and packet.transport_layer else 'N/A', # Destination port
-        "timestamp": float(packet.sniff_time.timestamp()) * 1000  # Convert to Unix timestamp in milliseconds. This is the time the packet was captured.
+        "packet_id": packet_id,
+        "type": packet.highest_layer,
+        "size": len(packet),
+        "src_ip": '0.0.0.0',
+        "dst_ip": '0.0.0.0',
+        "src_port": 0,
+        "dst_port": 0,
+        "timestamp": float(packet.sniff_time.timestamp()) * 1000,
+        "label": 'norm'
     }
 
-    # Print packet information to console. Color the packet red if it was sent to the server, yellow otherwise.
-    if packet_info['dst_ip'] == 'ADDR':
-        console.print(f"[red]CHUM packet: {packet_info}[/red]")
-    else:
-        console.print(f"[yellow]LIVE packet: {packet_info}[/yellow]")
+    if 'IP' in packet:
+        packet_info["src_ip"] = packet.ip.src
+        packet_info["dst_ip"] = packet.ip.dst
+        packet_info["src_port"] = int(packet[packet.transport_layer].srcport) if hasattr(packet, 'transport_layer') and packet.transport_layer and packet[packet.transport_layer].srcport.isdigit() else 0
+        packet_info["dst_port"] = int(packet[packet.transport_layer].dstport) if hasattr(packet, 'transport_layer') and packet.transport_layer and packet[packet.transport_layer].dstport.isdigit() else 0
+        packet_info["label"] = 'chum' if packet.ip.dst == chum_addr else 'norm'
 
-    # Add packet information to dataframe. This will be saved to a file later.
+    #if packet_info['src_ip'] in ip_blacklist:
+       #return
+
+    if packet_info['dst_ip'] == chum_addr:
+        console.print(f"[red1]CHUM PACKET >>> ID:{packet_info['packet_id']} TYPE:{packet_info['type']} SIZE:{packet_info['size']} SRC:{packet_info['src_ip']} DST:{packet_info['dst_ip']} SRC PORT:{packet_info['src_port']} DST PORT:{packet_info['dst_port']} TIMESTAMP:{packet_info['timestamp']}[/red1]")
+    else:
+        console.print(f"[deep_sky_blue3]REAL PACKET >>> ID:[deep_sky_blue1]{packet_info['packet_id']}[/deep_sky_blue1] TYPE:[cyan1]{packet_info['type']}[/cyan1] SIZE:[cyan1]{packet_info['size']}[/cyan1] SRC:[white]{packet_info['src_ip']}[/white] DST:[white]{packet_info['dst_ip']}[/white] SRC PORT:[cyan1]{packet_info['src_port']}[/cyan1] DST PORT:[cyan1]{packet_info['dst_port']}[/cyan1] TIMESTAMP:[deep_sky_blue1]{packet_info['timestamp']}[/deep_sky_blue1][/deep_sky_blue3]")
+
     new_row = pd.Series(packet_info, name='x')
     df = pd.concat([df, pd.DataFrame(new_row).T], ignore_index=True)
 
-    # If the dataframe has reached the batch size, save it to a file.
     if len(df) >= batch_size:
         try:
-            existing_data = pd.read_json('packets.json', orient='records')
+            existing_data = pd.read_csv('packets.csv')
         except (FileNotFoundError, pd.errors.EmptyDataError):
             existing_data = pd.DataFrame(columns=['packet_id', 'type', 'size', 'src_ip', 'dst_ip', 'src_port', 'dst_port', 'timestamp'])
 
-        # Combine existing data with new data and save to file.
         combined_data = pd.concat([existing_data, df], ignore_index=True)
-        # Save to file
-        combined_data.to_json('packets.json', orient='records')
-        # Print message to console
-        console.print(f"[green]Saved {batch_size} packets to JSON file.[/green]")
-
-        # Clear dataframe
+        combined_data.to_csv('packets.csv', index=False)
+        console.print(f"[green]Saved {batch_size} packets to CSV file.[/green]")
         df = pd.DataFrame(columns=['packet_id', 'type', 'size', 'src_ip', 'dst_ip', 'src_port', 'dst_port', 'timestamp'])
     
-    packet_id += 1  # Increment packet ID
+    packet_id += 1
 
 if __name__ == "__main__":
+    print(f"\nBatch size: {batch_size}", end="\n\n")
+    #print(f"IP blacklist: {ip_blacklist}", end="\n\n")
+    print(df, end="\n\n")
     capture = pyshark.LiveCapture(interface='Ethernet')
     capture.apply_on_packets(process_packet)

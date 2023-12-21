@@ -1,25 +1,18 @@
 # JAWS
 ![hehe](/assets/ohey.jpeg)
 
-A little side project demonstrating the use of machine learning in cybersecurity by applying cluster analysis to network traffic. To make things fun, Ive been collabortating with ChatGPT on my side projects and this is one of those. Entirelly written by ChatGPT, but supervisied, reviewed, and tested by me, and in some situations (threading for instance), I could not get ChatGPT to reason through the challange and so abandoned the approach to maintain a full AI written outcome*
+A closed-loop network packet capture, analysis, and modeling toolset. Intended as a case-study for data-quality analysis and model fine-tuning. There was a v1 that was insane, it tried to do all this auto-magical anomaly detection, but it was rubbish...
 
-You can then run `sea.py`, which uses `pyshark` to capture all packets on the desired interface. In this instance, we used our local Ethernet interface. The sea program, to avoid complexities (ChatGPT failed on several attempts to incorporating threading), writes batches of 100 packets to a pandas dataframe and then saves that to a stable file called `packets.json` -- You can inspect `sea.py` to see how it works what it is capturing.
+If you wish to play with it... Start by configuring `interface` and other paramaters and running `sea.py`, which uses `pyshark` to capture all packets on the desired interface. In this instance, we used our local Ethernet interface. You can inspect `sea.py` to see how it works what it is capturing, but highlevel the script writes batches (configurable) of 100 packets to a pandas dataframe and then writes that to a stable file called `packets.csv`
 
-The big boi program, `jaws.py`. Consumes all packet data in `packets.json` and processes it through DBSCAN to output clusters and plot those clusters along with labels on a 2D graph. The program also outputs a list of Top 20 Anomalies in the console with the top 5 highlighed in red. Every 30 seconds the data refreshes, in full... tried several attempts to handle only new packets but failed to get ChatGPT to reason through that problem as well. I have run the programs together past 1m packets with little memory issues.
+`sea.py` can be used to create all sorts of network activity datasets, for example, using the other scripts in the `/util` directory, you could set up and run a free AWS EC2 instance. This will allow for the simulation of exfiltration events using the `chum.py` and `listener.py`. Going back to and inspecting the `sea.py` script, you may notice that you can configure it to blacklist IP addresses and label activity. The script is setup to label all normal activity packets as `norm` and all chum packets as `chum`. I have used a combination of running the script without any exfiltration events for a clean "baseline activity" dataset and running the script while simulating exfiltration events to create test sets.
 
-To bring it all full circle, you can either generate packets using a tool like the ones found on this list:
-https://www.brianlinkletter.com/2023/02/network-emulators-and-network-simulators-2023/
+`push.py` is a utility for pushing a file the EC2 instance. I was using this on an edge device to push packets.json before going offline and no longer having access to said device. Disclaimer: I owned all of these devices...
 
-Or... you can setup a free Amazon EC2 instance and upload `listener.py` to it. Run the listener, and then run `sea.py` & `chum.py` on the local machine. Chum will create TLS encrypted packets and send them to the EC2 instance. the chum program contains some variables adjusting the style of packet, but in general it allows the end-user to give it a "file size" and it simulates exfiltration.
+It is also advisable to rename `packets.csv` between script cycles, this is because the rest of the scripts accept a list of packet csv files. For instance, the next step could be running `finder.py` using all of the datasets to understand where chum activity is happening against the backdrop/noise of baseline network activity. I have used this analysis to train and fine-tune detection models. Or you could play with `detect.py`, which is a v0 detection model.
 
-![the diagram!](/assets/diagram_3.png)
+Lastly, using analysis to determine anomlies or suspect addresses, you can `jaws.py` to pass an IP address to OpenAI for "OSINT"... I have explored several prompts and approach and feel that the current file returns a good list of public information include lat/long... but feel free to modify further. Additionally, this script also uses the IP address and all included csv files to create a time-series graph of network activity for this specific IP address.
 
-### Im sure there is lots I could improve on, there are limitations to writing console toys with ChatGPT... but leave some issues or something:
+This current state represents a refactor and simplification. Next steps include further development of the detection model and analysis documentation to improve this case-study.
 
-Updates: Added `hunt.py` which requests an IP address, just copy it from `jaws`, and returns a ChatGPT lookup with common parameters for IP address ownership like location :0 as well as a time series graph of activity for that `dst_ip`.
-
-Updates: Added `push.py` for those using the free EC2 instance approach. This contains variables for a file name (currently set to our packets file) and the EC2 parameters and then push that file to the server `/home/ec2-user/packet_captures/`. It also appends the datetime to the file name. I created this because I am using an edge device to capture packets from a remote network and needed a way to quickly and easily get the file off the edge device when it regained connectivity. *Educational purposes only, the "edge device" and "remote network" are actually a Clockwork uConsole, LAN Tap, and my home network.
-
-*Updates: I started writing more comments and tweaking the code, particually `jaws.py`, as I could tell the anomaly history did not work fully.
-
-Updates: Added `map.py`, which uses igraph to output a network map from packets.json. This is a pre-anomaly analysis map. I will expand on this in the future.
+![the diagram!](/assets/diagram_4.png)

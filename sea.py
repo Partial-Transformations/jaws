@@ -5,12 +5,12 @@ import os
 
 console = Console()
 batch_size = 100
-#ip_blacklist = ['IP ADDR']
-chum_addr = 'IP ADDR'
+#ip_blacklist = ['192.168.99.10'] # I had read somewhere you should not log your own IP, but I dont know... this obscures too much data...
+chum_addr = 'AWS IP' # AWS IP address of the chum server
 df = pd.DataFrame(columns=['packet_id', 'type', 'size', 'src_ip', 'dst_ip', 'src_port', 'dst_port', 'timestamp'])
 
-if os.path.exists('packets.csv'):
-    existing_data = pd.read_csv('packets.csv')
+if os.path.exists('./data/packets.csv'):
+    existing_data = pd.read_csv('./data/packets.csv')
     if not existing_data.empty:
         packet_id = existing_data['packet_id'].max() + 1
     else:
@@ -52,12 +52,12 @@ def process_packet(packet):
 
     if len(df) >= batch_size:
         try:
-            existing_data = pd.read_csv('packets.csv')
+            existing_data = pd.read_csv('./data/packets.csv')
         except (FileNotFoundError, pd.errors.EmptyDataError):
             existing_data = pd.DataFrame(columns=['packet_id', 'type', 'size', 'src_ip', 'dst_ip', 'src_port', 'dst_port', 'timestamp'])
 
         combined_data = pd.concat([existing_data, df], ignore_index=True)
-        combined_data.to_csv('packets.csv', index=False)
+        combined_data.to_csv('./data/packets.csv', index=False)
         console.print(f"[green]Saved {batch_size} packets to CSV file.[/green]")
         df = pd.DataFrame(columns=['packet_id', 'type', 'size', 'src_ip', 'dst_ip', 'src_port', 'dst_port', 'timestamp'])
     

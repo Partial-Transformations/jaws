@@ -9,10 +9,22 @@ import time
 # This is useful for testing your detection capabilities.
 # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/connect-linux-inst-ssh.html
 # ssh -i /path/key-pair-name.pem ec2-user@instance-public-dns-name
+# Port 53 (DNS): Hackers may use DNS tunneling to bypass security measures, as DNS traffic is usually allowed through firewalls.
+# Port 80 (HTTP): Though it's a common port, hackers might disguise their activities within regular web traffic to avoid suspicion.
+# Port 53/UDP (DNS UDP): Similar to DNS on TCP, DNS on UDP can also be exploited for data exfiltration.
+# Port 8080 (HTTP Proxy): Attackers can use HTTP proxy servers to send data, as many organizations allow outgoing traffic on this port.
+# Port 22 (SSH): While SSH is typically used for secure remote access, attackers can tunnel data through SSH sessions.
+# Port 123 (NTP): Network Time Protocol (NTP) traffic can be leveraged for covert data transfer due to its typically open nature.
+# Port 445 (SMB): Exploiting vulnerabilities in Server Message Block (SMB) protocol can lead to data exfiltration.
+# Port 6660-6669 (Internet Relay Chat - IRC): IRC ports are sometimes used for covert communication.
+# Port 25 (SMTP): Hackers can use email protocols to exfiltrate data by disguising it as legitimate email traffic.
+# Port 3306 (MySQL): If an organization uses MySQL databases, attackers might exploit vulnerabilities to access and exfiltrate data.
 
-HOST = 'AWS DNS IP ADDR'
-PORT = 40687
-CHUNK_SIZE = 11500
+HOST = 'AWS IP/DNS'
+PORTS = [53, 80, 8080, 445, 6660, 6661, 6662, 6663, 6664, 6665, 6666, 6667, 6668, 6669]
+PORT = random.choice(PORTS)
+CHUNK_SIZES = [6400, 12800, 25600, 51200]
+CHUNK_SIZE = random.choice(CHUNK_SIZES)
 
 def generate_random_data(size):
     return bytes([random.randint(0, 255) for _ in range(size)])

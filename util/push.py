@@ -8,10 +8,10 @@ from rich.traceback import install
 
 install()
 console = Console()
-file_path_relative = "./packets.json"
+file_path_relative = "FILE TO PUSH"
 ec2_ip = "AWS DNS IP ADDR" # Replace with your EC2 instance's IP address
 ec2_username = "ec2-user" # Replace with your EC2 instance's username
-ec2_key_path_relative = "./key.pem" # Replace with the path to your EC2 key
+ec2_key_path_relative = "KEY FILE" # Replace with the path to your EC2 key
 
 file_path = os.path.abspath(file_path_relative)
 ec2_key_path = os.path.abspath(ec2_key_path_relative)
@@ -26,7 +26,7 @@ def transfer_file_to_ec2(file_path, ec2_ip, ec2_username, ec2_key_path):
         file_name, file_extension = os.path.splitext(os.path.basename(file_path))
         remote_file_name = f"{file_name}_{current_time}{file_extension}"
 
-        remote_path = f"/home/ec2-user/packet_captures/{remote_file_name}"
+        remote_path = f"/home/ec2-user/FILE PATH{remote_file_name}"
 
         with console.status("[bold green]Transferring the file..."):
             ftp_client = ssh.open_sftp()

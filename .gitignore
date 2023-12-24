@@ -1,5 +1,4 @@
-anomaly_test_key.pem
+/util/anomaly_test_key.pem
 /v1
-packets_base_443.csv
-packets_exfil_443.csv
-packets_exfil_40687.csv
+/data
+/models

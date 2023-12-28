@@ -26,6 +26,6 @@ def train_and_detect_exfiltration(csv_files):
     print(f"Trained model saved to: {model_filename}")
 
 if __name__ == "__main__":
-    csv_files = ["./packets_base_500k.csv", "./packets_exfil_500k.csv"]
+    csv_files = ["./data/packets_base.csv", "./data/packets_training.csv"]
     train_and_detect_exfiltration(csv_files)
 

@@ -54,5 +54,5 @@ def filter_and_plot(src_ip, csv_files):
 if __name__ == "__main__":
     print("\n")
     src_ip_to_filter = input("Enter an ip address to search: ")
-    csv_files = ['./data/unlabeled.csv']
+    csv_files = ['./data/packets.csv']
     filter_and_plot(src_ip_to_filter, csv_files)

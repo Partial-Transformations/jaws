@@ -9,7 +9,7 @@ from rich.traceback import install
 install()
 console = Console()
 file_path_relative = "FILE TO PUSH"
-ec2_ip = "AWS DNS IP ADDR" # Replace with your EC2 instance's IP address
+ec2_ip = "AWS IP OR DNS" # Replace with your EC2 instance's IP address
 ec2_username = "ec2-user" # Replace with your EC2 instance's username
 ec2_key_path_relative = "KEY FILE" # Replace with the path to your EC2 key
 

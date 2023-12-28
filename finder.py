@@ -1,22 +1,26 @@
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
-csv_files = ['./data/unlabeled.csv']
-
+csv_files = ['./data/packets.csv']
 cmap = plt.get_cmap('ocean')
+fig = plt.figure(num=1, figsize=(12, 12))
+fig.canvas.manager.window.wm_geometry("+50+50")
 
-plt.figure(figsize=(12, 12))
 for i, csv_file in enumerate(csv_files):
     df = pd.read_csv(csv_file)
-    subset = df[df['label'] == 'norm']
+    subset = df[df['label'] == 'BASE']
     color = cmap(i / len(csv_files))
-    plt.scatter(subset['size'], subset['dst_port'], color=[color], label=f'norm from {csv_file}', alpha=0.3, zorder=1, s=100, marker='^')
-    subset = df[df['label'] == 'chum']
-    plt.scatter(subset['size'], subset['dst_port'], color='red', label='chum', alpha=0.9, zorder=1, s=100, marker='^')
+    plt.scatter(subset['size'], subset['dst_port'], color=[color], label=f'BASE from {csv_file}', alpha=0.2, zorder=10, s=25, marker='^')
+    subset = df[df['label'] == 'CHUM']
+    plt.scatter(subset['size'], subset['dst_port'], color='red', label='CHUM', alpha=0.6, zorder=15, s=25, marker='v')
 
-plt.xlabel('Packet Size')
-plt.ylabel('Destination Port')
+x_ticks = np.linspace(df['size'].min(), df['size'].max(), num=20)
+plt.yticks(df['dst_port'].unique(), fontsize=6, zorder=0)
+plt.xticks(x_ticks, fontsize=6, zorder=0)
 plt.grid(True, linewidth=0.25, color='#BEBEBE', alpha=0.5, zorder=0)
+plt.xlabel('Packet Size', fontsize=8)
+plt.ylabel('Destination Port', fontsize=8)
 plt.tight_layout()
 plt.show()

@@ -3,7 +3,7 @@ import pandas as pd
 import os
 
 batch_size = 5000
-chum_addr = 'AWS IP'  # AWS IP address of the chum server
+chum_addr = 'AWS IP ADDR'  # AWS IP address of the chum server
 df = pd.DataFrame(columns=['packet_id', 'protocol', 'tcp_flags', 'dns_domain', 'http_url', 'src_ip', 'src_port', 'src_mac', 'dst_ip', 'dst_port', 'dst_mac', 'size', 'timestamp', 'label'])
 
 if os.path.exists('./data/packets.csv'):

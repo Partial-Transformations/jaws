@@ -3,8 +3,18 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
-csv_files = ['./data/packets.csv']
+csv_files = ['./data/packets_chum.csv']
 cmap = plt.get_cmap('ocean')
+
+for i, csv_file in enumerate(csv_files):
+    df = pd.read_csv(csv_file)
+    grouped = df.groupby(['dst_port', 'src_ip', 'src_mac', 'dst_ip', 'dst_mac'])['size'].sum().reset_index()
+    grouped.sort_values(['dst_port', 'size'], ascending=[True, False], inplace=True)
+    grouped.drop_duplicates(subset='dst_port', keep='first', inplace=True)
+    grouped.columns = ['port', 'src_ip', 'src_mac', 'dst_ip', 'dst_mac', 'total_size']
+    grouped.to_csv('./data/finder.csv', index=False)
+    print(grouped.head(20))
+
 fig = plt.figure(num=1, figsize=(12, 12))
 fig.canvas.manager.window.wm_geometry("+50+50")
 

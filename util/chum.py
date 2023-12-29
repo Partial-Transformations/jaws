@@ -19,9 +19,11 @@ import time
 # Port 6660-6669 (Internet Relay Chat - IRC): IRC ports are sometimes used for covert communication.
 # Port 25 (SMTP): Hackers can use email protocols to exfiltrate data by disguising it as legitimate email traffic.
 # Port 3306 (MySQL): If an organization uses MySQL databases, attackers might exploit vulnerabilities to access and exfiltrate data.
+# Port 2503 (NMS-DPNSS): NMS-DPNSS is a protocol used for telephony. Attackers can use it to exfiltrate data.
+# Port 55553 (Bo2k): Back Orifice 2000 (BO2K) is a remote administration tool. Attackers can use it to exfiltrate data.
 
 HOST = 'AWS DNS'
-PORTS = [53, 80, 8080, 445, 6660, 6661, 6662, 6663, 6664, 6665, 6666, 6667, 6668, 6669] # Add more ports as needed...
+PORTS = [53, 80, 8080, 445, 6660, 6661, 6662, 6663, 6664, 6665, 6666, 6667, 6668, 6669, 2503, 55553] # Add more ports as needed...
 PORT = random.choice(PORTS)
 CHUNK_SIZES = [6400, 12800, 25600, 51200]
 CHUNK_SIZE = random.choice(CHUNK_SIZES)

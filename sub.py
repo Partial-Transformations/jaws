@@ -3,6 +3,59 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from scipy.stats import zscore
 
+def compute_out_degree(df, port):
+    G = nx.DiGraph()
+    filtered_df = df[(df['src_port'] == port) | (df['dst_port'] == port)]
+
+    for _, row in filtered_df.iterrows():
+        G.add_edge(row['src_mac'], row['dst_mac'], weight=row['size'])
+
+    weighted_out_degree = G.out_degree(weight='weight')
+    node_out, degree_out = max(weighted_out_degree, key=lambda x: x[1], default=(None, None))
+    return node_out, degree_out
+
+def compute_in_degree(df, port):
+    G = nx.DiGraph()
+    filtered_df = df[(df['src_port'] == port) | (df['dst_port'] == port)]
+
+    for _, row in filtered_df.iterrows():
+        G.add_edge(row['src_mac'], row['dst_mac'], weight=row['size'])
+
+    weighted_in_degree = G.in_degree(weight='weight')
+    in_degree_values = [degree for _, degree in weighted_in_degree]
+    z_scores = zscore(in_degree_values)
+    significant_nodes = [(node, z) for (node, _), z in zip(weighted_in_degree, z_scores)]
+    
+    if significant_nodes:
+        node_in, z_in_degree = max(significant_nodes, key=lambda x: x[1], default=(None, None))
+    else:
+        node_in, z_in_degree = None, None
+
+    return node_in, z_in_degree
+
+def analyze_network_data(file_path, output_file, port):
+    df = pd.read_csv(file_path)
+    unique_ports = set(df['src_port']).union(set(df['dst_port']))
+    results = []
+
+    for p in unique_ports:
+        node_out, degree_out = compute_out_degree(df, p)
+        node_in, z_in_degree = compute_in_degree(df, p)
+
+        results.append({
+            'port': p, 
+            'dst_mac_out': node_out, 
+            'weighted_outdegree': degree_out, 
+            'dst_mac_zin': node_in, 
+            'z_indegree': z_in_degree
+        })
+
+    results_df = pd.DataFrame(results)
+    results_df.sort_values(by='z_indegree', ascending=False, inplace=True)
+    results_df.to_csv(output_file, index=False)
+
+    visualize_network_graph(file_path, port)
+
 def visualize_network_graph(file_path, port):
     df = pd.read_csv(file_path)
     filtered_df = df[(df['src_port'] == port) | (df['dst_port'] == port)]
@@ -43,6 +96,7 @@ def visualize_network_graph(file_path, port):
     plt.tight_layout()
     plt.show()
 
-file_path = './data/packets_chum.csv'
-port = 63458
-visualize_network_graph(file_path, port)
+file_path = './data/packets_.csv'
+output_file = './data/subgraph.csv'
+port = 64805
+analyze_network_data(file_path, output_file, port)

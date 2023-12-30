@@ -96,7 +96,7 @@ def visualize_network_graph(file_path, port):
     plt.tight_layout()
     plt.show()
 
-file_path = './data/packets_.csv'
+file_path = './data/packets.csv'
 output_file = './data/subgraph.csv'
-port = 64805
+port = 0
 analyze_network_data(file_path, output_file, port)

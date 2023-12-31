@@ -75,7 +75,7 @@ def visualize_network_graph(file_path, port):
         node_color.append('gray' if z <= 1.645 else 'blue')  # Blue for normal, red for high z-score
         node_shape.append('o' if z <= 1.645 else 'D')  # Circle for normal, diamond for high z-score
 
-    fig = plt.figure(num=1, figsize=(8, 8))
+    fig = plt.figure(num='sub', figsize=(8, 8))
     fig.canvas.manager.window.wm_geometry("+50+50")
 
     pos = nx.spring_layout(G, k=0.5, iterations=50, seed=150)
@@ -92,7 +92,7 @@ def visualize_network_graph(file_path, port):
     nx.draw_networkx_edges(G, pos, width=0.25, edge_color='#BEBEBE')
     label_pos = {node: (pos[node][0], pos[node][1]+0.05) for node in G.nodes()}
     nx.draw_networkx_labels(G, label_pos, labels=labels, font_size=8, font_color='black', bbox=dict(facecolor='white', alpha=0.5, edgecolor='none', boxstyle='round,pad=0.25'))
-    plt.title(f'Network Graph for Port: {port}', fontsize=8)
+    plt.title(f'Graph Port: {port}', fontsize=8)
     plt.tight_layout()
     plt.show()
 

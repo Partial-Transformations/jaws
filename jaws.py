@@ -40,7 +40,7 @@ def filter_and_plot(src_ip, csv_files):
             print("\nInformation about the IP address:")
             print("\n", ip_info, "\n")
 
-        plt.figure(figsize=(20, 4))
+        plt.figure(num='time', figsize=(20, 4))
         filtered_df.loc[:, 'timestamp'] = pd.to_datetime(filtered_df['timestamp'], unit='ms')
         plt.plot_date(filtered_df['timestamp'], filtered_df['size'], linestyle='solid')
         plt.title(f"Packet Size over Time for: {src_ip} in {csv_file}", fontsize=8)

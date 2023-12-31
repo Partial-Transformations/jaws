@@ -13,9 +13,9 @@ for i, csv_file in enumerate(csv_files):
     grouped.drop_duplicates(subset='dst_port', keep='first', inplace=True)
     grouped.columns = ['port', 'src_ip', 'src_mac', 'dst_ip', 'dst_mac', 'total_size']
     grouped.to_csv('./data/finder.csv', index=False)
-    print(grouped.head(20))
+    print('\n', grouped.head(20), '\n')
 
-fig = plt.figure(num=1, figsize=(12, 12))
+fig = plt.figure(num='finder', figsize=(12, 12))
 fig.canvas.manager.window.wm_geometry("+50+50")
 
 for i, csv_file in enumerate(csv_files):
@@ -29,8 +29,9 @@ for i, csv_file in enumerate(csv_files):
 x_ticks = np.linspace(df['size'].min(), df['size'].max(), num=20)
 plt.yticks(df['dst_port'].unique(), fontsize=6, zorder=0)
 plt.xticks(x_ticks, fontsize=6, zorder=0)
-plt.grid(True, linewidth=0.25, color='#BEBEBE', alpha=0.5, zorder=0)
-plt.xlabel('Packet Size', fontsize=8)
-plt.ylabel('Destination Port', fontsize=8)
+plt.grid(True, linewidth=0.5, color='#BEBEBE', alpha=0.5, zorder=0)
+plt.xlabel('Size', fontsize=8)
+plt.ylabel('Port', fontsize=8)
+plt.title('The kelp forest through the trees...', fontsize=8)
 plt.tight_layout()
 plt.show()

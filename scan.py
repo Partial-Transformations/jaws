@@ -23,14 +23,21 @@ min_samples = 5
 dbscan = DBSCAN(eps=eps, min_samples=min_samples)
 clusters = dbscan.fit_predict(principal_components)
 
-fig, ax = plt.subplots(figsize=(12, 12))
-fig.canvas.manager.window.wm_geometry("+50+50")
-colors = ['blue' if x == -1 else plt.cm.ocean(x) for x in clusters]
+r = np.sqrt(principal_components[:, 0]**2 + principal_components[:, 1]**2)
+theta = np.arctan2(principal_components[:, 1], principal_components[:, 0])
+
+fig = plt.figure(num='scan', figsize=(12, 12))
+ax = fig.add_subplot(111, polar=True)
+fig.canvas.manager.window.wm_geometry("+1300+50")
+colors = ['blue' if x == -1 else 'green' for x in clusters]
 markers = ['D' if x == -1 else '^' for x in clusters]
-for i in range(len(principal_components)):
-    ax.scatter(principal_components[i, 0], principal_components[i, 1], c=colors[i], s=50, marker=markers[i], zorder=10)
+for i in range(len(r)):
+    ax.scatter(theta[i], r[i], c=colors[i], s=50, marker=markers[i], alpha=0.2, zorder=10)
     if clusters[i] == -1:
-        ax.text(principal_components[i, 0], principal_components[i, 1], df.iloc[i]['original_dst_port'], fontsize=8, bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.25'), zorder=20)
-plt.grid(True, linewidth=0.25, color='#BEBEBE', alpha=0.5, zorder=1)
+        ax.text(theta[i], r[i], df.iloc[i]['original_dst_port'], fontsize=8, bbox=dict(facecolor='white', alpha=0.8, edgecolor='none', boxstyle='round,pad=0.25'), zorder=20)
+plt.grid(True, linewidth=0.5, color='#BEBEBE', alpha=0.5, zorder=0)
+ax.set_xticklabels([])
+ax.set_yticklabels([])
+plt.title("Dun, Dun Duuun!", fontsize=8)
 plt.tight_layout()
 plt.show()

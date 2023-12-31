@@ -15,6 +15,8 @@ With `sea` and `chum` running, a `packets.csv` file is either created or updated
 
 `scan.py` -- PCA and DBSCAN with `dst_port` pulled out and used as the outlier label. Displays as a polar plot for thematics... For exploring how the data is clustering and which ports stand out.
 
+`captain.py` -- Runs both finder and scan in threads.
+
 `sub.py` -- Perform subgraph analysis with in and out degree, outputs a CSV file and a directed graph visual. For topology of the network.
 
 `jaws.py` -- For a given `ip address`, returns a timeseries plot. Also passes this address to OpenAI for public information. WIP.

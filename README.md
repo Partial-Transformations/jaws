@@ -19,7 +19,9 @@ With `sea` and `chum` running, a `packets.csv` file is either created or updated
 
 `sub.py` -- Perform subgraph analysis with in and out degree, outputs a CSV file and a directed graph visual. For topology of the network.
 
-`jaws.py` -- For a given `ip address`, returns a timeseries plot. Also passes this address to OpenAI for public information. WIP.
+`jaws.py` -- Simple Random Forest classifier script currently set to `dst_port` and `size`, returning `dst_ip`. WIP.
+
+`report.py` -- For a given `ip address`, returns a timeseries plot. Also passes this address to OpenAI for public information. WIP.
 
 Screenshot for demonstration. Running on a 24" monitor... If less, you may want to adjust the figure parameters before running.
 ![screenshot](/assets/example.png)

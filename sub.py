@@ -88,15 +88,17 @@ def visualize_network_graph(file_path, port):
                             node_color=colors_of_current_shape, node_shape=shape)
     
     z_scores_dict = {node: z for node, z in zip(G.nodes, z_scores)}
-    labels = {node: f'{node}\n{z_scores_dict[node]:.2f}' for node in G.nodes()}
-    nx.draw_networkx_edges(G, pos, width=0.25, edge_color='#BEBEBE')
-    label_pos = {node: (pos[node][0], pos[node][1]+0.05) for node in G.nodes()}
+    ip_dict = {row['src_mac']: row['src_ip'] for _, row in filtered_df.iterrows()}
+    ip_dict.update({row['dst_mac']: row['dst_ip'] for _, row in filtered_df.iterrows()})
+    labels = {node: f'{node}\n{ip_dict.get(node, "N/A")}\n{z_scores_dict[node]:.2f}' for node in G.nodes()}
+    nx.draw_networkx_edges(G, pos, width=0.5, edge_color='#BEBEBE')
+    label_pos = {node: (pos[node][0], pos[node][1]+0.075) for node in G.nodes()}
     nx.draw_networkx_labels(G, label_pos, labels=labels, font_size=8, font_color='black', bbox=dict(facecolor='white', alpha=0.5, edgecolor='none', boxstyle='round,pad=0.25'))
     plt.title(f'Graph Port: {port}', fontsize=8)
     plt.tight_layout()
     plt.show()
 
-file_path = './data/packets.csv'
+file_path = './data/sets/packets_.csv'
 output_file = './data/subgraph.csv'
-port = 0
+port = int(input("Enter a port to map: "))
 analyze_network_data(file_path, output_file, port)

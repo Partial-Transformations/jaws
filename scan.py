@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler
 import matplotlib.pyplot as plt
 import numpy as np
 
-df = pd.read_csv('./data/packets.csv')
+df = pd.read_csv('./data/sets/packets_.csv')
 df.drop(['packet_id', 'timestamp', 'dns_domain', 'http_url', 'label'], axis=1, inplace=True)
 df['original_dst_port'] = df['dst_port']
 df = pd.get_dummies(df, columns=['protocol', 'tcp_flags', 'src_ip', 'dst_ip', 'src_port', 'dst_port', 'src_mac', 'dst_mac'], drop_first=True)

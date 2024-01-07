@@ -2,7 +2,7 @@ import openai
 import pandas as pd
 import matplotlib.pyplot as plt
 
-openai.api_key = "OPENAI KEY"
+openai.api_key = "KEY"
 
 def get_ip_info_from_gpt(ip_address):
     try:
@@ -54,5 +54,5 @@ def filter_and_plot(src_ip, csv_files):
 if __name__ == "__main__":
     print("\n")
     src_ip_to_filter = input("Enter an ip address to search: ")
-    csv_files = ['./data/packets.csv']
+    csv_files = ['./data/sets/packets_.csv']
     filter_and_plot(src_ip_to_filter, csv_files)

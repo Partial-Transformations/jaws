@@ -3,7 +3,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, accuracy_score
 
-file_path = './data/sets/packets.csv'
+file_path = './data/sets/packets_.csv'
 data = pd.read_csv(file_path, low_memory=False)
 data = data[data['dst_ip'] != '192.168.99.10'] # Remove specific IP address
 

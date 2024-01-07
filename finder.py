@@ -3,7 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
-csv_files = ['./data/packets.csv']
+csv_files = ['./data/sets/packets_.csv']
 cmap = plt.get_cmap('ocean')
 
 for i, csv_file in enumerate(csv_files):

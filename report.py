@@ -28,8 +28,8 @@ def filter_and_plot(src_ip, csv_files):
             print(f"Failed to load {csv_file} or the file is empty...\n")
             continue
 
-        print("\n", df[df['src_ip'] == src_ip], "\n")
-        filtered_df = df[df['src_ip'] == src_ip]
+        print("\n", df[df['dst_ip'] == src_ip], "\n")
+        filtered_df = df[df['dst_ip'] == src_ip]
 
         if filtered_df.empty:
             print(f"No packets found for: {src_ip} in {csv_file}", "\n")

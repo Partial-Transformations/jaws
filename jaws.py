@@ -5,7 +5,7 @@ from sklearn.metrics import classification_report, accuracy_score
 
 file_path = './data/sets/packets_.csv'
 data = pd.read_csv(file_path, low_memory=False)
-data = data[data['dst_ip'] != '192.168.99.10'] # Remove specific IP address
+data = data[data['dst_ip'] != 'IP ADDR'] # Remove specific IP address
 
 features = ['dst_port', 'size']
 target = 'dst_ip'
